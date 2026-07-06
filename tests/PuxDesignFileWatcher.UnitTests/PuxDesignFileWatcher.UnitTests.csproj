@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PuxDesignFileWatcher.Domain\PuxDesignFileWatcher.Domain.csproj" />
     <ProjectReference Include="..\..\src\PuxDesignFileWatcher.Application\PuxDesignFileWatcher.Application.csproj" />
+    <ProjectReference Include="..\..\src\PuxDesignFileWatcher.Infrastructure\PuxDesignFileWatcher.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
