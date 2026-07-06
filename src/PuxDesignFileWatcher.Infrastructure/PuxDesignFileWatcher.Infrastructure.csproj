@@ -1,6 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PuxDesignFileWatcher.Application\PuxDesignFileWatcher.Application.csproj" />
     <ProjectReference Include="..\PuxDesignFileWatcher.Domain\PuxDesignFileWatcher.Domain.csproj" />
   </ItemGroup>

@@ -14,7 +14,7 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
 {
     private readonly IAnalysisLockPort _analysisLock;
     private readonly IFileSystemTraversalPort _fileSystemTraversal;
-    private readonly IContentHashPort _contentHash;
+    private readonly IHybridFileStateBuilderPort _hybridFileStateBuilder;
     private readonly IQueryHandler<LoadStateQuery, DirectoryManifestSnapshot?> _loadState;
     private readonly ICommandHandler<DiffStateCommand, Domain.Changes.ManifestDiffResult> _diffState;
     private readonly ICommandHandler<SaveStateCommand, bool> _saveState;
@@ -25,14 +25,14 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
     public AnalyzeDirectoryCommandHandler(
         IAnalysisLockPort analysisLock,
         IFileSystemTraversalPort fileSystemTraversal,
-        IContentHashPort contentHash,
+        IHybridFileStateBuilderPort hybridFileStateBuilder,
         IQueryHandler<LoadStateQuery, DirectoryManifestSnapshot?> loadState,
         ICommandHandler<DiffStateCommand, Domain.Changes.ManifestDiffResult> diffState,
         ICommandHandler<SaveStateCommand, bool> saveState)
     {
         _analysisLock = analysisLock;
         _fileSystemTraversal = fileSystemTraversal;
-        _contentHash = contentHash;
+        _hybridFileStateBuilder = hybridFileStateBuilder;
         _loadState = loadState;
         _diffState = diffState;
         _saveState = saveState;
@@ -44,24 +44,14 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
         await using var lockHandle = await _analysisLock.AcquireAsync(command.RootPath, cancellationToken);
 
         var analyzedAtUtc = DateTimeOffset.UtcNow;
-        var scannedFiles = await _fileSystemTraversal.EnumerateFilesAsync(command.RootPath, cancellationToken);
-
-        var currentFiles = new Dictionary<string, FileManifestEntry>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var scannedFile in scannedFiles)
-        {
-            var hash = await _contentHash.ComputeHashAsync(scannedFile.FullPath, cancellationToken);
-
-            currentFiles[scannedFile.RelativePath] = new FileManifestEntry(
-                scannedFile.RelativePath,
-                scannedFile.SizeBytes,
-                scannedFile.LastWriteTimeUtc,
-                hash,
-                version: 1);
-        }
-
         var previousSnapshot = await _loadState.HandleAsync(
             new LoadStateQuery(command.RootPath),
+            cancellationToken);
+
+        var scannedFiles = await _fileSystemTraversal.EnumerateFilesAsync(command.RootPath, cancellationToken);
+        var currentFiles = await _hybridFileStateBuilder.BuildCurrentStateAsync(
+            scannedFiles,
+            previousSnapshot,
             cancellationToken);
 
         var diffResult = await _diffState.HandleAsync(
