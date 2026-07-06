@@ -1,41 +1,70 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using PuxDesignFileWatcher.Application;
+using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
+using PuxDesignFileWatcher.Domain.Changes;
+using PuxDesignFileWatcher.Infrastructure;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+app.MapScalarApiReference(options =>
 {
-    app.MapOpenApi();
-}
+    options.Title = "PuxDesignFileWatcher API";
+});
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapPost(
+    "/api/analysis",
+    async Task<Results<BadRequest<string>, Ok<AnalysisResponseDto>>>(
+        AnalysisRequestDto request,
+        ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> handler,
+        CancellationToken cancellationToken) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.RootPath))
+        {
+            return TypedResults.BadRequest("RootPath is required.");
+        }
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+        var result = await handler.HandleAsync(new AnalyzeDirectoryCommand(request.RootPath), cancellationToken);
+
+        var response = new AnalysisResponseDto(
+            result.RootPath,
+            result.AnalyzedAtUtc,
+            MapByType(result, ChangeType.New),
+            MapByType(result, ChangeType.Changed),
+            MapByType(result, ChangeType.Deleted));
+
+        return TypedResults.Ok(response);
+    })
+.WithName("AnalyzeDirectory")
+.WithSummary("Runs manual analysis for a directory path and returns detected changes.")
+.WithDescription("Performs a single on-demand analysis run. No automatic filesystem watcher is used.");
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+static IReadOnlyCollection<AnalysisItemDto> MapByType(DirectoryAnalysisResult result, ChangeType type)
+    => result.Changes
+        .Where(change => change.ChangeType == type)
+        .Select(change => new AnalysisItemDto(change.RelativePath, change.Version))
+        .OrderBy(change => change.Path, StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+public sealed record AnalysisRequestDto(string RootPath);
+
+public sealed record AnalysisItemDto(string Path, int Version);
+
+public sealed record AnalysisResponseDto(
+    string RootPath,
+    DateTimeOffset AnalyzedAtUtc,
+    IReadOnlyCollection<AnalysisItemDto> New,
+    IReadOnlyCollection<AnalysisItemDto> Changed,
+    IReadOnlyCollection<AnalysisItemDto> Deleted);

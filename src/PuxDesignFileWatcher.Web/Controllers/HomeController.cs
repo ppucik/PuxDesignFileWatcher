@@ -1,19 +1,45 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
+using PuxDesignFileWatcher.Domain.Changes;
 using PuxDesignFileWatcher.Web.Models;
 
 namespace PuxDesignFileWatcher.Web.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    private readonly ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> _analyzeDirectory;
+
+    public HomeController(ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> analyzeDirectory)
     {
-        return View();
+        _analyzeDirectory = analyzeDirectory;
     }
 
-    public IActionResult Privacy()
+    public IActionResult Index()
     {
-        return View();
+        return View(new AnalyzeDirectoryPageViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Index(AnalyzeDirectoryPageViewModel pageModel, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(pageModel);
+        }
+
+        var result = await _analyzeDirectory.HandleAsync(
+            new AnalyzeDirectoryCommand(pageModel.Input.RootPath),
+            cancellationToken);
+
+        pageModel.NewFiles = MapByType(result, ChangeType.New);
+        pageModel.ChangedFiles = MapByType(result, ChangeType.Changed);
+        pageModel.DeletedFiles = MapByType(result, ChangeType.Deleted);
+        pageModel.Message = $"Analysis completed at {result.AnalyzedAtUtc:O}.";
+
+        return View(pageModel);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -21,4 +47,13 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    private static IReadOnlyCollection<AnalysisResultItemViewModel> MapByType(
+        DirectoryAnalysisResult result,
+        ChangeType type)
+        => result.Changes
+            .Where(change => change.ChangeType == type)
+            .Select(change => new AnalysisResultItemViewModel(change.RelativePath, change.Version))
+            .OrderBy(change => change.Path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 }
