@@ -1,0 +1,53 @@
+# PuxDesignFileWatcher
+
+Potrebujem vypracovat kompletne zadanie "Program na detekciu zmien v adresári" ako ".NET Senior developer & Software architect" podla zadania.
+
+Vytvorte jednoduchý program, ktorý bude schopný detegovať zmeny v lokálnom adresári zadanom ako vstup. 
+Program pri prvom spustení zanalyzuje rekurzívne obsah adresára a pri ďalších spusteniach vypíše zmeny od posledného spustenia.
+	
+Program musí vypísať:
+- Nové súbory
+- Zmenené súbory (zmena = zmena obsahu súboru)
+- Zmazané súbory a podadresáre
+
+Každý súbor bude mať verziu, ktorá začína hodnotou 1 a pri každej zmene sa inkrementuje o 1.
+Program nesmie detekovat zmeny filesystemu automaticky.
+
+📌 Predpoklady
+- Veľkosť súborov v adresári: max 50 MB
+- Počet súborov v adresári: max 100
+- Hybridný prístup detekcie zmien pre max. výkon (najprv veľkosť súboru a čas úpravy, až potom hash z obsahu)
+- Program sa spúšťa manuálne z UI tlačidlom
+- Bez databázy – žiadna perzistencia dát v DB 
+- Ukladanie stavu do manifestu (JSON) alebo binárneho (MessagePack) s nastavením v appsettings.json ("StorageFormat") 
+- Konfigurovateľné nastavenie umiestnenie manifestu v appsettings.json ("BasePath"=path, "Mode"="AppData" or "PerRoot")
+
+🖥️ Implementácia a Technológie
+- Názov solution: PuxDesignFileWatcher.slnx
+- Názov repozitára: ppucik/PuxDesignFileWatcher
+- Framework: .NET 10, Jazyk: C#
+- Prezentačná aplikácia bude ASP.NET Core MVC 
+- REST API bude vytvorené ako Minimal API, implemtovaná dokumentácia: OpenAPI pomocou Scalar UI.
+- Architektúra: Clean architecture (striktné oddelenie vrstiev: Api/Web, Application, Domain, Infrastructure)
+- Navrhnúť a vytvoriť štruktúru repozitára (adresárová štruktúra a príslušné súbory)
+
+🧩 Požiadavky na UI
+- Použi Bootstrap 5 pripojený cez CDN (žiadny NPM/Webpack).
+- UI musí obsahovať: Textbox na zadanie cesty k adresáru a Tlačidlo na spustenie analýzy.
+- Výsledky analýzy (Nové, Zmenené, Zmazané) zobraz v prehľadných tabuľkách s odlíšením farieb (zelená, žltá, červená). Formulár nech je responzívny.
+
+⚙️ Bezpečnosť a Edge-cases
+- Zabezpeč thread-safety pri analýze adresára (napr. SemaphoreSlim), aby dva requesty naraz neanalyzovali rovnakú zložku.
+- Implementuj bezpečné ignorovanie súborov, ktoré sú uzamknuté iným procesom (zachytávanie IOException a logovanie cez ILogger).
+
+🧾 Popis riešenia
+Riešenie stručne popíšte v README.md subore a uveďte prípadné obmedzenia.
+
+🤖 Inštrukcie pre AI (Execution Order)
+Pri generovaní kódu postupuj iteratívne v tomto poradí:
+1. Vytvor Solution, štruktúru projektov a základný README.md.
+2. Naimplementuj Domain vrstvu (modely a biznis pravidlá).
+3. Vytvor Application vrstvu (use-cases, interfejsy, query a commandy, CQRS).
+4. Naimplementuj Infrastructure (výpočet hashov, prácu s file systémom, ukladanie stavu JSON/MessagePack).
+5. Vytvor Web a API vrstvu (Controlery, Minimal API endpointy a UI).
+6. Vygeneruj Unit a Integračné testy.
