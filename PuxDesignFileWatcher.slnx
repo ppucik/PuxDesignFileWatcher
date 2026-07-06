@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PuxDesignFileWatcher.Api/PuxDesignFileWatcher.Api.csproj" />
+    <Project Path="src/PuxDesignFileWatcher.Application/PuxDesignFileWatcher.Application.csproj" />
+    <Project Path="src/PuxDesignFileWatcher.Domain/PuxDesignFileWatcher.Domain.csproj" />
+    <Project Path="src/PuxDesignFileWatcher.Infrastructure/PuxDesignFileWatcher.Infrastructure.csproj" />
+    <Project Path="src/PuxDesignFileWatcher.Web/PuxDesignFileWatcher.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PuxDesignFileWatcher.IntegrationTests/PuxDesignFileWatcher.IntegrationTests.csproj" />
+    <Project Path="tests/PuxDesignFileWatcher.UnitTests/PuxDesignFileWatcher.UnitTests.csproj" />
+  </Folder>
+</Solution>

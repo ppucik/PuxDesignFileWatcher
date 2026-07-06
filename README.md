@@ -1,53 +1,46 @@
 # PuxDesignFileWatcher
 
-Potrebujem vypracovat kompletne zadanie "Program na detekciu zmien v adresári" ako ".NET Senior developer & Software architect" podla zadania.
+Implementácia zadania „Program na detekciu zmien v adresári“ v .NET 10 a C# s dôrazom na čistú architektúru a manuálne spúšťanú analýzu adresára.
 
-Vytvorte jednoduchý program, ktorý bude schopný detegovať zmeny v lokálnom adresári zadanom ako vstup. 
-Program pri prvom spustení zanalyzuje rekurzívne obsah adresára a pri ďalších spusteniach vypíše zmeny od posledného spustenia.
-	
-Program musí vypísať:
+## Cieľ
+
+Aplikácia má medzi behmi detegovať:
+
 - Nové súbory
-- Zmenené súbory (zmena = zmena obsahu súboru)
+- Zmenené súbory (zmena obsahu)
 - Zmazané súbory a podadresáre
 
-Každý súbor bude mať verziu, ktorá začína hodnotou 1 a pri každej zmene sa inkrementuje o 1.
-Program nesmie detekovat zmeny filesystemu automaticky.
+Každý súbor má verziu od `1`, ktorá sa pri každej obsahovej zmene inkrementuje o `1`.
 
-📌 Predpoklady
-- Veľkosť súborov v adresári: max 50 MB
-- Počet súborov v adresári: max 100
-- Hybridný prístup detekcie zmien pre max. výkon (najprv veľkosť súboru a čas úpravy, až potom hash z obsahu)
-- Program sa spúšťa manuálne z UI tlačidlom
-- Bez databázy – žiadna perzistencia dát v DB 
-- Ukladanie stavu do manifestu (JSON) alebo binárneho (MessagePack) s nastavením v appsettings.json ("StorageFormat") 
-- Konfigurovateľné nastavenie umiestnenie manifestu v appsettings.json ("BasePath"=path, "Mode"="AppData" or "PerRoot")
+## Architektúra
 
-🖥️ Implementácia a Technológie
-- Názov solution: PuxDesignFileWatcher.slnx
-- Názov repozitára: ppucik/PuxDesignFileWatcher
-- Framework: .NET 10, Jazyk: C#
-- Prezentačná aplikácia bude ASP.NET Core MVC 
-- REST API bude vytvorené ako Minimal API, implemtovaná dokumentácia: OpenAPI pomocou Scalar UI.
-- Architektúra: Clean architecture (striktné oddelenie vrstiev: Api/Web, Application, Domain, Infrastructure)
-- Navrhnúť a vytvoriť štruktúru repozitára (adresárová štruktúra a príslušné súbory)
+Riešenie je organizované podľa Clean Architecture so striktným oddelením vrstiev:
 
-🧩 Požiadavky na UI
-- Použi Bootstrap 5 pripojený cez CDN (žiadny NPM/Webpack).
-- UI musí obsahovať: Textbox na zadanie cesty k adresáru a Tlačidlo na spustenie analýzy.
-- Výsledky analýzy (Nové, Zmenené, Zmazané) zobraz v prehľadných tabuľkách s odlíšením farieb (zelená, žltá, červená). Formulár nech je responzívny.
+- `src/PuxDesignFileWatcher.Domain`
+- `src/PuxDesignFileWatcher.Application`
+- `src/PuxDesignFileWatcher.Infrastructure`
+- `src/PuxDesignFileWatcher.Web`
+- `src/PuxDesignFileWatcher.Api`
+- `tests/PuxDesignFileWatcher.UnitTests`
+- `tests/PuxDesignFileWatcher.IntegrationTests`
 
-⚙️ Bezpečnosť a Edge-cases
-- Zabezpeč thread-safety pri analýze adresára (napr. SemaphoreSlim), aby dva requesty naraz neanalyzovali rovnakú zložku.
-- Implementuj bezpečné ignorovanie súborov, ktoré sú uzamknuté iným procesom (zachytávanie IOException a logovanie cez ILogger).
+Solution súbor:
 
-🧾 Popis riešenia
-Riešenie stručne popíšte v README.md subore a uveďte prípadné obmedzenia.
+- `PuxDesignFileWatcher.slnx`
 
-🤖 Inštrukcie pre AI (Execution Order)
-Pri generovaní kódu postupuj iteratívne v tomto poradí:
-1. Vytvor Solution, štruktúru projektov a základný README.md.
-2. Naimplementuj Domain vrstvu (modely a biznis pravidlá).
-3. Vytvor Application vrstvu (use-cases, interfejsy, query a commandy, CQRS).
-4. Naimplementuj Infrastructure (výpočet hashov, prácu s file systémom, ukladanie stavu JSON/MessagePack).
-5. Vytvor Web a API vrstvu (Controlery, Minimal API endpointy a UI).
-6. Vygeneruj Unit a Integračné testy.
+## Implementačný postup (fázy)
+
+1. Solution + štruktúra projektov + baseline README
+2. Domain vrstva (modely a pravidlá)
+3. Application vrstva (use-cases, CQRS, porty)
+4. Infrastructure vrstva (filesystem, hash, JSON/MessagePack)
+5. Web MVC + Minimal API + OpenAPI/Scalar
+6. Unit a integračné testy
+
+## Stav po fáze 1
+
+- Vytvorená solution `PuxDesignFileWatcher.slnx`
+- Vytvorená základná štruktúra projektov v `src/` a `tests/`
+- Nastavené počiatočné referencie medzi projektmi
+
+Detailná funkcionalita sa dopĺňa v ďalších fázach podľa `.github/copilot-instructions.md`.
