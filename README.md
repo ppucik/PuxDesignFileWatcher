@@ -1,4 +1,4 @@
-# PuxDesignFileWatcher
+# PUXDesign - File Watcher
 
 Implementácia zadania „Program na detekciu zmien v adresári“ v .NET 10 a C# s dôrazom na čistú architektúru a manuálne spúšťanú analýzu adresára.
 
