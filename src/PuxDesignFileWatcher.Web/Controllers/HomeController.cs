@@ -9,6 +9,8 @@ namespace PuxDesignFileWatcher.Web.Controllers;
 
 public class HomeController : Controller
 {
+    private const string RootPathModelKey = "Input.RootPath";
+
     private readonly ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> _analyzeDirectory;
 
     public HomeController(ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> analyzeDirectory)
@@ -32,7 +34,7 @@ public class HomeController : Controller
 
         if (!Directory.Exists(pageModel.Input.RootPath))
         {
-            ModelState.AddModelError(nameof(pageModel.Input.RootPath), "The provided directory path does not exist.");
+            ModelState.AddModelError(RootPathModelKey, "The provided directory path does not exist.");
             return View(pageModel);
         }
 
@@ -46,12 +48,12 @@ public class HomeController : Controller
         }
         catch (DirectoryNotFoundException)
         {
-            ModelState.AddModelError(nameof(pageModel.Input.RootPath), "The provided directory path does not exist.");
+            ModelState.AddModelError(RootPathModelKey, "The provided directory path does not exist.");
             return View(pageModel);
         }
         catch (DirectoryAnalysisValidationException ex)
         {
-            ModelState.AddModelError(nameof(pageModel.Input.RootPath), ex.Message);
+            ModelState.AddModelError(RootPathModelKey, ex.Message);
             return View(pageModel);
         }
 
