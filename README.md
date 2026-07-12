@@ -37,10 +37,4 @@ Solution súbor:
 5. Web MVC + Minimal API + OpenAPI/Scalar
 6. Unit a integračné testy
 
-## Stav po fáze 1
-
-- Vytvorená solution `PuxDesignFileWatcher.slnx`
-- Vytvorená základná štruktúra projektov v `src/` a `tests/`
-- Nastavené počiatočné referencie medzi projektmi
-
 Detailná funkcionalita sa dopĺňa v ďalších fázach podľa `.github/copilot-instructions.md`.
