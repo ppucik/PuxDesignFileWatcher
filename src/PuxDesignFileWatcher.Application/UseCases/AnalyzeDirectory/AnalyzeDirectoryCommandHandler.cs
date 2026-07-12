@@ -41,6 +41,16 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
     /// <inheritdoc />
     public async Task<DirectoryAnalysisResult> HandleAsync(AnalyzeDirectoryCommand command, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(command.RootPath))
+        {
+            throw new ArgumentException("Root path must be provided.", nameof(command));
+        }
+
+        if (!Directory.Exists(command.RootPath))
+        {
+            throw new DirectoryNotFoundException($"Directory '{command.RootPath}' does not exist.");
+        }
+
         await using var lockHandle = await _analysisLock.AcquireAsync(command.RootPath, cancellationToken);
 
         var analyzedAtUtc = DateTimeOffset.UtcNow;

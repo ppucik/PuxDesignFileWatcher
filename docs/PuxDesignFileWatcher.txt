@@ -49,4 +49,3 @@ Pri generovaní kódu postupuj iteratívne v tomto poradí:
 4. Naimplementuj Infrastructure (výpočet hashov, prácu s file systémom, ukladanie stavu JSON/MessagePack).
 5. Vytvor Web a API vrstvu (Controlery, Minimal API endpointy a UI).
 6. Vygeneruj Unit a Integračné testy.
-7. Vytvor ZIP subor z celého vygenerovanéro repozitára, aby bolo možné ho stiahnuť lokálne na PC.

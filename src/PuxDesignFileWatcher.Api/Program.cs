@@ -34,7 +34,20 @@ app.MapPost(
             return TypedResults.BadRequest("RootPath is required.");
         }
 
-        var result = await handler.HandleAsync(new AnalyzeDirectoryCommand(request.RootPath), cancellationToken);
+        if (!Directory.Exists(request.RootPath))
+        {
+            return TypedResults.BadRequest($"Directory '{request.RootPath}' does not exist.");
+        }
+
+        DirectoryAnalysisResult result;
+        try
+        {
+            result = await handler.HandleAsync(new AnalyzeDirectoryCommand(request.RootPath), cancellationToken);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return TypedResults.BadRequest($"Directory '{request.RootPath}' does not exist.");
+        }
 
         var response = new AnalysisResponseDto(
             result.RootPath,
@@ -45,9 +58,9 @@ app.MapPost(
 
         return TypedResults.Ok(response);
     })
-.WithName("AnalyzeDirectory")
-.WithSummary("Runs manual analysis for a directory path and returns detected changes.")
-.WithDescription("Performs a single on-demand analysis run. No automatic filesystem watcher is used.");
+    .WithName("AnalyzeDirectory")
+    .WithSummary("Runs manual analysis for a directory path and returns detected changes.")
+    .WithDescription("Performs a single on-demand analysis run. No automatic filesystem watcher is used.");
 
 app.Run();
 

@@ -37,6 +37,12 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
         }
 
         var normalizedRoot = Path.GetFullPath(rootPath);
+
+        if (!Directory.Exists(normalizedRoot))
+        {
+            throw new DirectoryNotFoundException($"Directory '{normalizedRoot}' does not exist.");
+        }
+
         var ignoredDirectory = ResolveIgnoredDirectoryForPerRootMode(normalizedRoot);
 
         var result = new List<ScannedFileDescriptor>();
@@ -61,7 +67,12 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
             }
             catch (IOException ex)
             {
-                _logger.LogWarning(ex, "Skipping locked directory during traversal: {Directory}", currentDirectory);
+                if (ex is DirectoryNotFoundException && currentDirectory.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new DirectoryNotFoundException($"Directory '{normalizedRoot}' does not exist.", ex);
+                }
+
+                _logger.LogWarning(ex, "Skipping inaccessible directory during traversal: {Directory}", currentDirectory);
                 continue;
             }
 
@@ -82,7 +93,12 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
             }
             catch (IOException ex)
             {
-                _logger.LogWarning(ex, "Skipping files in locked directory: {Directory}", currentDirectory);
+                if (ex is DirectoryNotFoundException && currentDirectory.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new DirectoryNotFoundException($"Directory '{normalizedRoot}' does not exist.", ex);
+                }
+
+                _logger.LogWarning(ex, "Skipping files in inaccessible directory: {Directory}", currentDirectory);
                 continue;
             }
 

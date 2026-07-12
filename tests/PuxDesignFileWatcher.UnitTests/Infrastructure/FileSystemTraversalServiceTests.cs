@@ -39,6 +39,22 @@ public sealed class FileSystemTraversalServiceTests : IAsyncLifetime
         Assert.DoesNotContain(files, file => file.RelativePath.StartsWith(StorageOptions.BASEPATH_DEFAULT, StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task EnumerateFilesAsync_WhenRootDoesNotExist_ShouldThrowDirectoryNotFoundException()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        var storageOptions = new StorageOptionsAccessor(configuration);
+        var traversal = new FileSystemTraversalService(NullLogger<FileSystemTraversalService>.Instance, storageOptions);
+
+        var missingRoot = Path.Combine(_rootPath, "missing-root");
+
+        await Assert.ThrowsAsync<DirectoryNotFoundException>(() =>
+            traversal.EnumerateFilesAsync(missingRoot, CancellationToken.None));
+    }
+
     public Task InitializeAsync()
     {
         _rootPath = Path.Combine(Path.GetTempPath(), "PuxDesignFileWatcherTraversalTests", Guid.NewGuid().ToString("N"));

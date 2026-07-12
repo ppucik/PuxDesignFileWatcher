@@ -30,9 +30,24 @@ public class HomeController : Controller
             return View(pageModel);
         }
 
-        var result = await _analyzeDirectory.HandleAsync(
-            new AnalyzeDirectoryCommand(pageModel.Input.RootPath),
-            cancellationToken);
+        if (!Directory.Exists(pageModel.Input.RootPath))
+        {
+            ModelState.AddModelError(nameof(pageModel.Input.RootPath), "The provided directory path does not exist.");
+            return View(pageModel);
+        }
+
+        DirectoryAnalysisResult result;
+        try
+        {
+            result = await _analyzeDirectory.HandleAsync(
+                new AnalyzeDirectoryCommand(pageModel.Input.RootPath),
+                cancellationToken);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            ModelState.AddModelError(nameof(pageModel.Input.RootPath), "The provided directory path does not exist.");
+            return View(pageModel);
+        }
 
         pageModel.NewFiles = MapByType(result, ChangeType.New);
         pageModel.ChangedFiles = MapByType(result, ChangeType.Changed);
