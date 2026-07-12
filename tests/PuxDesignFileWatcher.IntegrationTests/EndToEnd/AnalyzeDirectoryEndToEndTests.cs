@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using PuxDesignFileWatcher.Application.Abstractions.CQRS;
+using PuxDesignFileWatcher.Application.Models;
 using PuxDesignFileWatcher.Application.Ports;
 using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 using PuxDesignFileWatcher.Application.UseCases.DiffState;
@@ -105,6 +106,7 @@ public sealed class AnalyzeDirectoryEndToEndTests : IAsyncLifetime
     private ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> CreateAnalyzer()
     {
         IAnalysisLockPort analysisLock = new KeyedAnalysisLockService();
+        IAnalysisLimitsPort analysisLimits = new FixedAnalysisLimitsPort(maxFileCount: 100, maxFileSizeBytes: 50 * 1024L * 1024L);
         IFileSystemTraversalPort traversal = new FileSystemTraversalService(NullLogger<FileSystemTraversalService>.Instance);
         IContentHashPort hashing = new Sha256ContentHashProvider();
         IHybridFileStateBuilderPort hybridBuilder = new HybridFileStateBuilder(hashing, NullLogger<HybridFileStateBuilder>.Instance);
@@ -116,7 +118,7 @@ public sealed class AnalyzeDirectoryEndToEndTests : IAsyncLifetime
         var diffState = new DiffStateCommandHandler();
         var saveState = new SaveStateCommandHandler(pathResolver, repository);
 
-        return new AnalyzeDirectoryCommandHandler(analysisLock, traversal, hybridBuilder, loadState, diffState, saveState);
+        return new AnalyzeDirectoryCommandHandler(analysisLock, analysisLimits, traversal, hybridBuilder, loadState, diffState, saveState);
     }
 
     private sealed class FixedManifestPathResolver : IManifestPathResolverPort
@@ -129,5 +131,17 @@ public sealed class AnalyzeDirectoryEndToEndTests : IAsyncLifetime
         }
 
         public string ResolveManifestPath(string rootPath) => _manifestPath;
+    }
+
+    private sealed class FixedAnalysisLimitsPort : IAnalysisLimitsPort
+    {
+        private readonly AnalysisLimitsSettings _limits;
+
+        public FixedAnalysisLimitsPort(int maxFileCount, long maxFileSizeBytes)
+        {
+            _limits = new AnalysisLimitsSettings(maxFileCount, maxFileSizeBytes);
+        }
+
+        public AnalysisLimitsSettings GetLimits() => _limits;
     }
 }

@@ -37,6 +37,7 @@ public class HomeController : Controller
         }
 
         DirectoryAnalysisResult result;
+
         try
         {
             result = await _analyzeDirectory.HandleAsync(
@@ -46,6 +47,11 @@ public class HomeController : Controller
         catch (DirectoryNotFoundException)
         {
             ModelState.AddModelError(nameof(pageModel.Input.RootPath), "The provided directory path does not exist.");
+            return View(pageModel);
+        }
+        catch (DirectoryAnalysisValidationException ex)
+        {
+            ModelState.AddModelError(nameof(pageModel.Input.RootPath), ex.Message);
             return View(pageModel);
         }
 

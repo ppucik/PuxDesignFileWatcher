@@ -1,4 +1,5 @@
 using PuxDesignFileWatcher.Application.Abstractions.CQRS;
+using PuxDesignFileWatcher.Application.Models;
 using PuxDesignFileWatcher.Application.Ports;
 using PuxDesignFileWatcher.Application.UseCases.DiffState;
 using PuxDesignFileWatcher.Application.UseCases.LoadState;
@@ -13,6 +14,7 @@ namespace PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult>
 {
     private readonly IAnalysisLockPort _analysisLock;
+    private readonly IAnalysisLimitsPort _analysisLimits;
     private readonly IFileSystemTraversalPort _fileSystemTraversal;
     private readonly IHybridFileStateBuilderPort _hybridFileStateBuilder;
     private readonly IQueryHandler<LoadStateQuery, DirectoryManifestSnapshot?> _loadState;
@@ -24,6 +26,7 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
     /// </summary>
     public AnalyzeDirectoryCommandHandler(
         IAnalysisLockPort analysisLock,
+        IAnalysisLimitsPort analysisLimits,
         IFileSystemTraversalPort fileSystemTraversal,
         IHybridFileStateBuilderPort hybridFileStateBuilder,
         IQueryHandler<LoadStateQuery, DirectoryManifestSnapshot?> loadState,
@@ -31,6 +34,7 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
         ICommandHandler<SaveStateCommand, bool> saveState)
     {
         _analysisLock = analysisLock;
+        _analysisLimits = analysisLimits;
         _fileSystemTraversal = fileSystemTraversal;
         _hybridFileStateBuilder = hybridFileStateBuilder;
         _loadState = loadState;
@@ -59,6 +63,9 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
             cancellationToken);
 
         var scannedSnapshot = await _fileSystemTraversal.EnumerateFilesAsync(command.RootPath, cancellationToken);
+
+        ValidateScannedSnapshot(scannedSnapshot);
+
         var currentFiles = await _hybridFileStateBuilder.BuildCurrentStateAsync(
             scannedSnapshot.Files,
             previousSnapshot,
@@ -82,5 +89,29 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
             analyzedAtUtc,
             diffResult.Changes,
             diffResult.NextSnapshot);
+    }
+
+    private void ValidateScannedSnapshot(ScannedDirectorySnapshot scannedSnapshot)
+    {
+        var limits = _analysisLimits.GetLimits();
+
+        if (scannedSnapshot.Files.Count > limits.MaxFileCount)
+        {
+            throw new DirectoryAnalysisValidationException(
+                $"The selected directory contains {scannedSnapshot.Files.Count} files, which exceeds the configured limit of {limits.MaxFileCount} files.");
+        }
+
+        var oversizeFile = scannedSnapshot.Files
+            .OrderByDescending(file => file.SizeBytes)
+            .FirstOrDefault(file => file.SizeBytes > limits.MaxFileSizeBytes);
+
+        if (oversizeFile is not null)
+        {
+            var maxMb = limits.MaxFileSizeBytes / (1024d * 1024d);
+            var actualMb = oversizeFile.SizeBytes / (1024d * 1024d);
+
+            throw new DirectoryAnalysisValidationException(
+                $"File '{oversizeFile.RelativePath}' has size {actualMb:F2} MB, which exceeds the configured limit of {maxMb:F2} MB.");
+        }
     }
 }

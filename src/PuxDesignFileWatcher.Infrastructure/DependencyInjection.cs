@@ -22,9 +22,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddSingleton(new AnalysisLimitsOptionsAccessor(configuration));
         services.AddSingleton(new StorageOptionsAccessor(configuration));
 
         services.AddSingleton<IAnalysisLockPort, KeyedAnalysisLockService>();
+        services.AddSingleton<IAnalysisLimitsPort, AnalysisLimitsProvider>();
         services.AddSingleton<IManifestPathResolverPort, ManifestPathResolver>();
 
         services.AddTransient<IFileSystemTraversalPort, FileSystemTraversalService>();

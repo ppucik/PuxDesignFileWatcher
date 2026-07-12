@@ -48,6 +48,10 @@ app.MapPost(
         {
             return TypedResults.BadRequest($"Directory '{request.RootPath}' does not exist.");
         }
+        catch (DirectoryAnalysisValidationException ex)
+        {
+            return TypedResults.BadRequest(ex.Message);
+        }
 
         var response = new AnalysisResponseDto(
             result.RootPath,
