@@ -1,4 +1,12 @@
 <Solution>
+  <Folder Name="/docs/">
+    <File Path="docs/PUXdesign - cvicny ukol - backend.pdf" />
+    <File Path="docs/PuxDesignFileWatcher.txt" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+	<File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/PuxDesignFileWatcher.Api/PuxDesignFileWatcher.Api.csproj" />
     <Project Path="src/PuxDesignFileWatcher.Application/PuxDesignFileWatcher.Application.csproj" />
