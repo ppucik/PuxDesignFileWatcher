@@ -1,6 +1,11 @@
-@PuxDesignFileWatcher.Api_HostAddress = http://localhost:5191
+@PuxDesignFileWatcher.Api_HostAddress = https://localhost:44308
 
-GET {{PuxDesignFileWatcher.Api_HostAddress}}/weatherforecast/
+POST {{PuxDesignFileWatcher.Api_HostAddress}}/api/analysis
+Content-Type: application/json
 Accept: application/json
+
+{
+  "rootPath": "C:\\Logs"
+}
 
 ###

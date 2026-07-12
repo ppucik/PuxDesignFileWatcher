@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 using PuxDesignFileWatcher.Application.UseCases.DiffState;
 using PuxDesignFileWatcher.Application.UseCases.LoadState;

@@ -1,4 +1,4 @@
-namespace PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+namespace PuxDesignFileWatcher.Application.Abstractions.CQRS;
 
 /// <summary>
 /// Handles command execution.

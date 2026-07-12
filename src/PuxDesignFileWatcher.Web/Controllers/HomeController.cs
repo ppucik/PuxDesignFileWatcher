@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 using PuxDesignFileWatcher.Domain.Changes;
 using PuxDesignFileWatcher.Web.Models;
+using System.Diagnostics;
 
 namespace PuxDesignFileWatcher.Web.Controllers;
 

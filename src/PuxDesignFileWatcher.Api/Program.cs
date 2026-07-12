@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using PuxDesignFileWatcher.Application;
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 using PuxDesignFileWatcher.Domain.Changes;
 using PuxDesignFileWatcher.Infrastructure;
@@ -24,7 +24,7 @@ app.UseHttpsRedirection();
 
 app.MapPost(
     "/api/analysis",
-    async Task<Results<BadRequest<string>, Ok<AnalysisResponseDto>>>(
+    async Task<Results<BadRequest<string>, Ok<AnalysisResponseDto>>> (
         AnalysisRequestDto request,
         ICommandHandler<AnalyzeDirectoryCommand, DirectoryAnalysisResult> handler,
         CancellationToken cancellationToken) =>

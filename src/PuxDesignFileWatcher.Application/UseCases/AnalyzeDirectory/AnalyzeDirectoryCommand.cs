@@ -1,4 +1,4 @@
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 
 namespace PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 

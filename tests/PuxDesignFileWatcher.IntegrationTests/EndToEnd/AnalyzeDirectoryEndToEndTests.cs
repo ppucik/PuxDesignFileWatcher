@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 using PuxDesignFileWatcher.Application.Ports;
 using PuxDesignFileWatcher.Application.UseCases.AnalyzeDirectory;
 using PuxDesignFileWatcher.Application.UseCases.DiffState;

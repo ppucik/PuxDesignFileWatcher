@@ -1,4 +1,4 @@
-using PuxDesignFileWatcher.Application.Abstractions.Cqrs;
+using PuxDesignFileWatcher.Application.Abstractions.CQRS;
 using PuxDesignFileWatcher.Application.Ports;
 
 namespace PuxDesignFileWatcher.Application.UseCases.SaveState;
