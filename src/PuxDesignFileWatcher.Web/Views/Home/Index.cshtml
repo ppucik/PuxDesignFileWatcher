@@ -1,4 +1,5 @@
 ﻿@model PuxDesignFileWatcher.Web.Models.AnalyzeDirectoryPageViewModel
+@using PuxDesignFileWatcher.Domain.Changes
 
 @{
     ViewData["Title"] = "Directory Analysis";
@@ -95,13 +96,14 @@
                     <thead>
                         <tr>
                             <th scope="col">Path</th>
+                            <th scope="col">Type</th>
                             <th scope="col" class="text-end">Version</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model.DeletedFiles.Count == 0)
                         {
-                            <tr><td colspan="2" class="text-muted">No deleted items.</td></tr>
+                            <tr><td colspan="3" class="text-muted">No deleted items.</td></tr>
                         }
                         else
                         {
@@ -109,7 +111,17 @@
                             {
                                 <tr>
                                     <td>@item.Path</td>
-                                    <td class="text-end">@item.Version</td>
+                                    <td>
+                                        @if (item.EntryKind == ChangeEntryKind.Directory)
+                                        {
+                                            <span class="badge text-bg-secondary">Directory</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-light border">File</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">@(item.EntryKind == ChangeEntryKind.Directory ? "-" : item.Version)</td>
                                 </tr>
                             }
                         }

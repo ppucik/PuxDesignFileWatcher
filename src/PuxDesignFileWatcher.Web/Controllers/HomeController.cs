@@ -76,7 +76,7 @@ public class HomeController : Controller
         ChangeType type)
         => result.Changes
             .Where(change => change.ChangeType == type)
-            .Select(change => new AnalysisResultItemViewModel(change.RelativePath, change.Version))
+            .Select(change => new AnalysisResultItemViewModel(change.RelativePath, change.Version, change.EntryKind))
             .OrderBy(change => change.Path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 }

@@ -48,7 +48,6 @@ Detailná funkcionalita sa dopĺňa v ďalších fázach podľa `.github/copilot
 
 ## Možné ďalšie vylepšenia
 
-- Doplniť robustnejšiu validáciu vstupnej cesty (existencia, práva, whitelist/blacklist pravidlá).
 - Pridať detailnejšie reporty z analýzy (trvanie, počet hashovaných súborov, počet preskočených uzamknutých súborov).
 - Rozšíriť API/UI o stránkovanie a filtrovanie výsledkov pri väčších adresároch.
 - Zaviesť retenčnú politiku pre historické snapshoty (napr. N posledných behov, porovnanie medzi ľubovoľnými behmi).

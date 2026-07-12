@@ -1,3 +1,5 @@
+using PuxDesignFileWatcher.Domain.Changes;
+
 namespace PuxDesignFileWatcher.Web.Models;
 
 /// <summary>
@@ -5,4 +7,5 @@ namespace PuxDesignFileWatcher.Web.Models;
 /// </summary>
 /// <param name="Path">Relative file path.</param>
 /// <param name="Version">Computed file version.</param>
-public sealed record AnalysisResultItemViewModel(string Path, int Version);
+/// <param name="EntryKind">Kind of changed entry (file or directory).</param>
+public sealed record AnalysisResultItemViewModel(string Path, int Version, ChangeEntryKind EntryKind);

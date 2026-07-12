@@ -8,7 +8,7 @@ namespace PuxDesignFileWatcher.Infrastructure.Concurrency;
 /// </summary>
 public sealed class KeyedAnalysisLockService : IAnalysisLockPort
 {
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, LockEntry> _locks = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
     public async Task<IAsyncDisposable> AcquireAsync(string rootPath, CancellationToken cancellationToken)
@@ -19,24 +19,68 @@ public sealed class KeyedAnalysisLockService : IAnalysisLockPort
         }
 
         var key = Path.GetFullPath(rootPath);
-        var semaphore = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        var entry = _locks.GetOrAdd(key, _ => new LockEntry());
+        Interlocked.Increment(ref entry.ReferenceCount);
 
-        await semaphore.WaitAsync(cancellationToken);
-        return new Releaser(semaphore);
+        try
+        {
+            await entry.Semaphore.WaitAsync(cancellationToken);
+            return new Releaser(this, key, entry);
+        }
+        catch
+        {
+            ReleaseEntry(key, entry, releaseSemaphore: false);
+            throw;
+        }
+    }
+
+    private void ReleaseEntry(string key, LockEntry entry, bool releaseSemaphore)
+    {
+        if (releaseSemaphore)
+        {
+            entry.Semaphore.Release();
+        }
+
+        if (Interlocked.Decrement(ref entry.ReferenceCount) != 0)
+        {
+            return;
+        }
+
+        if (_locks.TryRemove(new KeyValuePair<string, LockEntry>(key, entry)))
+        {
+            entry.Semaphore.Dispose();
+        }
+    }
+
+    private sealed class LockEntry
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+
+        public int ReferenceCount;
     }
 
     private sealed class Releaser : IAsyncDisposable
     {
-        private readonly SemaphoreSlim _semaphore;
+        private readonly KeyedAnalysisLockService _owner;
+        private readonly string _key;
+        private readonly LockEntry _entry;
+        private int _disposed;
 
-        public Releaser(SemaphoreSlim semaphore)
+        public Releaser(KeyedAnalysisLockService owner, string key, LockEntry entry)
         {
-            _semaphore = semaphore;
+            _owner = owner;
+            _key = key;
+            _entry = entry;
         }
 
         public ValueTask DisposeAsync()
         {
-            _semaphore.Release();
+            if (Interlocked.Exchange(ref _disposed, 1) == 1)
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            _owner.ReleaseEntry(_key, _entry, releaseSemaphore: true);
             return ValueTask.CompletedTask;
         }
     }
