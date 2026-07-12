@@ -18,6 +18,7 @@ public sealed class DiffStateCommandHandler : ICommandHandler<DiffStateCommand, 
             command.PreviousSnapshot,
             command.RootPath,
             command.CurrentScannedFiles,
+            command.CurrentScannedDirectories,
             command.AnalyzedAtUtc);
 
         return Task.FromResult(result);

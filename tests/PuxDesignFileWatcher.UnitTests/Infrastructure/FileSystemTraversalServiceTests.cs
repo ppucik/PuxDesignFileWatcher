@@ -33,10 +33,10 @@ public sealed class FileSystemTraversalServiceTests : IAsyncLifetime
         await File.WriteAllTextAsync(trackedFile, "user-content", CancellationToken.None);
         await File.WriteAllTextAsync(internalFile, "internal-content", CancellationToken.None);
 
-        var files = await traversal.EnumerateFilesAsync(_rootPath, CancellationToken.None);
+        var snapshot = await traversal.EnumerateFilesAsync(_rootPath, CancellationToken.None);
 
-        Assert.Contains(files, file => file.RelativePath.Equals("user.txt", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(files, file => file.RelativePath.StartsWith(StorageOptions.BASEPATH_DEFAULT, StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(snapshot.Files, file => file.RelativePath.Equals("user.txt", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(snapshot.Files, file => file.RelativePath.StartsWith(StorageOptions.BASEPATH_DEFAULT, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

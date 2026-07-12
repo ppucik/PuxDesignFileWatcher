@@ -27,7 +27,7 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyCollection<ScannedFileDescriptor>> EnumerateFilesAsync(
+    public Task<ScannedDirectorySnapshot> EnumerateFilesAsync(
         string rootPath,
         CancellationToken cancellationToken)
     {
@@ -46,6 +46,7 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
         var ignoredDirectory = ResolveIgnoredDirectoryForPerRootMode(normalizedRoot);
 
         var result = new List<ScannedFileDescriptor>();
+        var directories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var pendingDirectories = new Stack<string>();
         pendingDirectories.Push(normalizedRoot);
 
@@ -81,6 +82,12 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
                 if (ignoredDirectory is not null && IsSameOrSubPath(subDirectory, ignoredDirectory))
                 {
                     continue;
+                }
+
+                var relativeDirectory = Path.GetRelativePath(normalizedRoot, subDirectory);
+                if (!string.IsNullOrWhiteSpace(relativeDirectory) && relativeDirectory != ".")
+                {
+                    directories.Add(relativeDirectory);
                 }
 
                 pendingDirectories.Push(subDirectory);
@@ -129,7 +136,7 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
             }
         }
 
-        return Task.FromResult<IReadOnlyCollection<ScannedFileDescriptor>>(result);
+        return Task.FromResult(new ScannedDirectorySnapshot(result, directories.ToArray()));
     }
 
     private string? ResolveIgnoredDirectoryForPerRootMode(string normalizedRoot)

@@ -16,12 +16,14 @@ public static class ManifestDiffService
     /// <param name="currentScannedFiles">
     /// Current file states keyed by relative path. Versions in this input are ignored and recomputed.
     /// </param>
+    /// <param name="currentScannedDirectories">Current scanned relative subdirectory paths.</param>
     /// <param name="analyzedAtUtc">Timestamp representing analysis completion in UTC.</param>
     /// <returns>Diff result with computed next snapshot and detected changes.</returns>
     public static ManifestDiffResult Diff(
         DirectoryManifestSnapshot? previousSnapshot,
         string rootPath,
         IReadOnlyDictionary<string, FileManifestEntry> currentScannedFiles,
+        IReadOnlyCollection<string> currentScannedDirectories,
         DateTimeOffset analyzedAtUtc)
     {
         if (string.IsNullOrWhiteSpace(rootPath))
@@ -30,9 +32,15 @@ public static class ManifestDiffService
         }
 
         ArgumentNullException.ThrowIfNull(currentScannedFiles);
+        ArgumentNullException.ThrowIfNull(currentScannedDirectories);
 
         var previousFiles = previousSnapshot?.Files
             ?? new Dictionary<string, FileManifestEntry>(StringComparer.OrdinalIgnoreCase);
+
+        var previousDirectories = previousSnapshot?.Directories
+            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var currentDirectories = new HashSet<string>(currentScannedDirectories, StringComparer.OrdinalIgnoreCase);
 
         var nextFiles = new Dictionary<string, FileManifestEntry>(StringComparer.OrdinalIgnoreCase);
         var changes = new List<FileChangeRecord>();
@@ -84,7 +92,17 @@ public static class ManifestDiffService
             changes.Add(new FileChangeRecord(relativePath, ChangeType.Deleted, previous.Version));
         }
 
-        var nextSnapshot = new DirectoryManifestSnapshot(rootPath, analyzedAtUtc, nextFiles);
+        foreach (var previousDirectory in previousDirectories)
+        {
+            if (currentDirectories.Contains(previousDirectory))
+            {
+                continue;
+            }
+
+            changes.Add(new FileChangeRecord(previousDirectory, ChangeType.Deleted, 0, ChangeEntryKind.Directory));
+        }
+
+        var nextSnapshot = new DirectoryManifestSnapshot(rootPath, analyzedAtUtc, nextFiles, currentDirectories);
 
         return new ManifestDiffResult(nextSnapshot, changes);
     }

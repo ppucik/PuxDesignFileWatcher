@@ -28,6 +28,7 @@ public class ManifestDiffServiceTests
             previousSnapshot,
             "C:\\root",
             currentFiles,
+            [],
             DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
 
         Assert.Contains(result.Changes, c => c.RelativePath == "new.txt" && c.ChangeType == ChangeType.New && c.Version == 1);
@@ -57,6 +58,7 @@ public class ManifestDiffServiceTests
             previousSnapshot,
             "C:\\root",
             currentFiles,
+            [],
             DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
 
         var stable = result.NextSnapshot.Files["stable.txt"];
@@ -64,5 +66,27 @@ public class ManifestDiffServiceTests
 
         Assert.Equal(4, stable.Version);
         Assert.Equal(3, changed.Version);
+    }
+
+    [Fact]
+    public void Diff_ShouldReportDeletedEmptySubdirectory()
+    {
+        var previousSnapshot = new DirectoryManifestSnapshot(
+            "C:\\root",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            new Dictionary<string, FileManifestEntry>(StringComparer.OrdinalIgnoreCase),
+            ["empty-subdir"]);
+
+        var result = ManifestDiffService.Diff(
+            previousSnapshot,
+            "C:\\root",
+            new Dictionary<string, FileManifestEntry>(StringComparer.OrdinalIgnoreCase),
+            [],
+            DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
+
+        Assert.Contains(result.Changes, change =>
+            change.RelativePath == "empty-subdir"
+            && change.ChangeType == ChangeType.Deleted
+            && change.EntryKind == ChangeEntryKind.Directory);
     }
 }

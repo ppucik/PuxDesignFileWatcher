@@ -10,4 +10,6 @@ public sealed class SerializableManifestSnapshot
     public DateTimeOffset AnalyzedAtUtc { get; set; }
 
     public List<SerializableFileManifestEntry> Files { get; set; } = [];
+
+    public List<string> Directories { get; set; } = [];
 }

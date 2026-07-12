@@ -64,6 +64,26 @@ public sealed class AnalyzeDirectoryEndToEndTests : IAsyncLifetime
             && c.ChangeType == ChangeType.Deleted);
     }
 
+    [Fact]
+    public async Task AnalyzeDirectory_WhenEmptySubdirectoryIsDeleted_ShouldReportDeletedDirectory()
+    {
+        var analyzer = CreateAnalyzer();
+
+        var emptyDirectory = Path.Combine(_tempRoot, "empty-subdir");
+        Directory.CreateDirectory(emptyDirectory);
+
+        _ = await analyzer.HandleAsync(new AnalyzeDirectoryCommand(_tempRoot), CancellationToken.None);
+
+        Directory.Delete(emptyDirectory, recursive: true);
+
+        var second = await analyzer.HandleAsync(new AnalyzeDirectoryCommand(_tempRoot), CancellationToken.None);
+
+        Assert.Contains(second.Changes, c =>
+            c.RelativePath == "empty-subdir"
+            && c.ChangeType == ChangeType.Deleted
+            && c.EntryKind == ChangeEntryKind.Directory);
+    }
+
     public Task InitializeAsync()
     {
         _tempRoot = Path.Combine(Path.GetTempPath(), "PuxDesignFileWatcherIntegration", Guid.NewGuid().ToString("N"));

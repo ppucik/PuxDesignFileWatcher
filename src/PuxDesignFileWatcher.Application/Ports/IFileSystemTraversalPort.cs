@@ -8,9 +8,9 @@ namespace PuxDesignFileWatcher.Application.Ports;
 public interface IFileSystemTraversalPort
 {
     /// <summary>
-    /// Recursively enumerates all files under the provided root path.
+    /// Recursively enumerates files and subdirectories under the provided root path.
     /// </summary>
-    Task<IReadOnlyCollection<ScannedFileDescriptor>> EnumerateFilesAsync(
+    Task<ScannedDirectorySnapshot> EnumerateFilesAsync(
         string rootPath,
         CancellationToken cancellationToken);
 }

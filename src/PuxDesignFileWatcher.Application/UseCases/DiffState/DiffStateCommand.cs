@@ -10,9 +10,11 @@ namespace PuxDesignFileWatcher.Application.UseCases.DiffState;
 /// <param name="RootPath">Root directory path.</param>
 /// <param name="PreviousSnapshot">Previously stored snapshot.</param>
 /// <param name="CurrentScannedFiles">Current scanned files keyed by relative path.</param>
+/// <param name="CurrentScannedDirectories">Current scanned relative subdirectory paths.</param>
 /// <param name="AnalyzedAtUtc">Current analysis timestamp in UTC.</param>
 public sealed record DiffStateCommand(
     string RootPath,
     DirectoryManifestSnapshot? PreviousSnapshot,
     IReadOnlyDictionary<string, FileManifestEntry> CurrentScannedFiles,
+    IReadOnlyCollection<string> CurrentScannedDirectories,
     DateTimeOffset AnalyzedAtUtc) : ICommand<ManifestDiffResult>;

@@ -22,6 +22,9 @@ internal static class ManifestSnapshotMapper
                     ContentHash = file.ContentHash,
                     Version = file.Version
                 })
+                .ToList(),
+            Directories = snapshot.Directories
+                .OrderBy(directory => directory, StringComparer.OrdinalIgnoreCase)
                 .ToList()
         };
     }
@@ -38,6 +41,10 @@ internal static class ManifestSnapshotMapper
                 file.Version),
             StringComparer.OrdinalIgnoreCase);
 
-        return new DirectoryManifestSnapshot(snapshot.RootPath, snapshot.AnalyzedAtUtc, files);
+        return new DirectoryManifestSnapshot(
+            snapshot.RootPath,
+            snapshot.AnalyzedAtUtc,
+            files,
+            snapshot.Directories);
     }
 }

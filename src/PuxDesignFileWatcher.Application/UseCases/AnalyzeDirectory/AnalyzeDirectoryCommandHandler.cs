@@ -58,14 +58,19 @@ public sealed class AnalyzeDirectoryCommandHandler : ICommandHandler<AnalyzeDire
             new LoadStateQuery(command.RootPath),
             cancellationToken);
 
-        var scannedFiles = await _fileSystemTraversal.EnumerateFilesAsync(command.RootPath, cancellationToken);
+        var scannedSnapshot = await _fileSystemTraversal.EnumerateFilesAsync(command.RootPath, cancellationToken);
         var currentFiles = await _hybridFileStateBuilder.BuildCurrentStateAsync(
-            scannedFiles,
+            scannedSnapshot.Files,
             previousSnapshot,
             cancellationToken);
 
         var diffResult = await _diffState.HandleAsync(
-            new DiffStateCommand(command.RootPath, previousSnapshot, currentFiles, analyzedAtUtc),
+            new DiffStateCommand(
+                command.RootPath,
+                previousSnapshot,
+                currentFiles,
+                scannedSnapshot.Directories,
+                analyzedAtUtc),
             cancellationToken);
 
         await _saveState.HandleAsync(
