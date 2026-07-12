@@ -13,7 +13,7 @@ public sealed class StorageOptionsAccessor
     {
         _options = new StorageOptions();
 
-        var section = configuration.GetSection(StorageOptions.SectionName);
+        var section = configuration.GetSection(StorageOptions.SECTION_NAME);
 
         if (section["StorageFormat"] is { Length: > 0 } nestedFormat)
         {

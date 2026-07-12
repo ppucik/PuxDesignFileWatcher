@@ -8,7 +8,12 @@ public sealed class StorageOptions
     /// <summary>
     /// Configuration section name.
     /// </summary>
-    public const string SectionName = "Storage";
+    public const string SECTION_NAME = "Storage";
+
+    /// <summary>
+    /// Default base path for persisted manifests.
+    /// </summary>
+    public const string BASEPATH_DEFAULT = ".puxdfw";
 
     /// <summary>
     /// Gets or sets selected storage format.
@@ -18,7 +23,7 @@ public sealed class StorageOptions
     /// <summary>
     /// Gets or sets base path for manifest storage.
     /// </summary>
-    public string BasePath { get; set; } = "PuxDesignFileWatcher";
+    public string BasePath { get; set; } = BASEPATH_DEFAULT;
 
     /// <summary>
     /// Gets or sets location mode: AppData or PerRoot.

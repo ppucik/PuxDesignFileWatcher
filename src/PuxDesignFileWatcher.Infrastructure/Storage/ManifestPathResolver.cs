@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
-using System.Text;
 using PuxDesignFileWatcher.Application.Ports;
 using PuxDesignFileWatcher.Infrastructure.Configuration;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PuxDesignFileWatcher.Infrastructure.Storage;
 
@@ -44,7 +44,7 @@ public sealed class ManifestPathResolver : IManifestPathResolverPort
 
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var configuredBasePath = string.IsNullOrWhiteSpace(_storageOptions.BasePath)
-            ? "PuxDesignFileWatcher"
+            ? StorageOptions.BASEPATH_DEFAULT
             : _storageOptions.BasePath;
 
         var storageBase = Path.IsPathRooted(configuredBasePath)

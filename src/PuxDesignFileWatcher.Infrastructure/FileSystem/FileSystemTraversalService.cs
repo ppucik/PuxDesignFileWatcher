@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using PuxDesignFileWatcher.Application.Models;
 using PuxDesignFileWatcher.Application.Ports;
+using PuxDesignFileWatcher.Infrastructure.Configuration;
 
 namespace PuxDesignFileWatcher.Infrastructure.FileSystem;
 
@@ -10,10 +11,19 @@ namespace PuxDesignFileWatcher.Infrastructure.FileSystem;
 public sealed class FileSystemTraversalService : IFileSystemTraversalPort
 {
     private readonly ILogger<FileSystemTraversalService> _logger;
+    private readonly StorageOptionsAccessor? _storageOptions;
 
     public FileSystemTraversalService(ILogger<FileSystemTraversalService> logger)
+        : this(logger, storageOptions: null)
+    {
+    }
+
+    public FileSystemTraversalService(
+        ILogger<FileSystemTraversalService> logger,
+        StorageOptionsAccessor? storageOptions)
     {
         _logger = logger;
+        _storageOptions = storageOptions;
     }
 
     /// <inheritdoc />
@@ -27,6 +37,8 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
         }
 
         var normalizedRoot = Path.GetFullPath(rootPath);
+        var ignoredDirectory = ResolveIgnoredDirectoryForPerRootMode(normalizedRoot);
+
         var result = new List<ScannedFileDescriptor>();
         var pendingDirectories = new Stack<string>();
         pendingDirectories.Push(normalizedRoot);
@@ -36,6 +48,11 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
             cancellationToken.ThrowIfCancellationRequested();
 
             var currentDirectory = pendingDirectories.Pop();
+
+            if (ignoredDirectory is not null && IsSameOrSubPath(currentDirectory, ignoredDirectory))
+            {
+                continue;
+            }
 
             IEnumerable<string> subDirectories;
             try
@@ -50,6 +67,11 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
 
             foreach (var subDirectory in subDirectories)
             {
+                if (ignoredDirectory is not null && IsSameOrSubPath(subDirectory, ignoredDirectory))
+                {
+                    continue;
+                }
+
                 pendingDirectories.Push(subDirectory);
             }
 
@@ -67,6 +89,11 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
             foreach (var filePath in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (ignoredDirectory is not null && IsSameOrSubPath(filePath, ignoredDirectory))
+                {
+                    continue;
+                }
 
                 try
                 {
@@ -87,5 +114,33 @@ public sealed class FileSystemTraversalService : IFileSystemTraversalPort
         }
 
         return Task.FromResult<IReadOnlyCollection<ScannedFileDescriptor>>(result);
+    }
+
+    private string? ResolveIgnoredDirectoryForPerRootMode(string normalizedRoot)
+    {
+        if (_storageOptions?.Mode != ManifestLocationMode.PerRoot)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(_storageOptions.BasePath))
+        {
+            return null;
+        }
+
+        return Path.GetFullPath(Path.Combine(normalizedRoot, _storageOptions.BasePath));
+    }
+
+    private static bool IsSameOrSubPath(string path, string parentPath)
+    {
+        var normalizedPath = Path.GetFullPath(path)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        var normalizedParent = Path.GetFullPath(parentPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        return normalizedPath.Equals(normalizedParent, StringComparison.OrdinalIgnoreCase)
+               || normalizedPath.StartsWith(normalizedParent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+               || normalizedPath.StartsWith(normalizedParent + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     }
 }
