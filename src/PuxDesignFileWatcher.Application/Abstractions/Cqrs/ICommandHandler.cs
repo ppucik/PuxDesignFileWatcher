@@ -1,7 +1,7 @@
 namespace PuxDesignFileWatcher.Application.Abstractions.CQRS;
 
 /// <summary>
-/// Handles command execution.
+/// Handles command execution
 /// </summary>
 public interface ICommandHandler<in TCommand, TResult>
     where TCommand : ICommand<TResult>

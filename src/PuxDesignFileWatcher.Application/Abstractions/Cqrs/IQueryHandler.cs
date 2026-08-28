@@ -1,13 +1,13 @@
 namespace PuxDesignFileWatcher.Application.Abstractions.CQRS;
 
 /// <summary>
-/// Handles query execution.
+/// Handles query execution
 /// </summary>
 public interface IQueryHandler<in TQuery, TResult>
     where TQuery : IQuery<TResult>
 {
     /// <summary>
-    /// Executes query logic.
+    /// Executes query logic
     /// </summary>
     Task<TResult> HandleAsync(TQuery query, CancellationToken cancellationToken);
 }
