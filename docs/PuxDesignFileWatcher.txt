@@ -41,27 +41,6 @@ Program nesmie detekovat zmeny filesystemu automaticky.
 🧾 Popis riešenia
 Riešenie stručne popíšte v README.md subore a uveďte prípadné obmedzenia.
 
-📌 Kuberneties
-1. Namespace
-kubectl apply -f k8s/namespace.yaml
-2. Secrets 
-kubectl apply -f k8s/secret.yaml
-3. ConfigMap
-kubectl apply -f k8s/configmap.yaml
-4. RBAC
-kubectl apply -f k8s/serviceaccount.yaml
-5. NetworkPolicy
-kubectl apply -f k8s/network-policy.yaml
-6. Service
-kubectl apply -f k8s/service.yaml
-7. Deployment
-kubectl apply -f k8s/deployment.yaml
-8. HPA
-kubectl apply -f k8s/hpa.yaml
-9. Verification
-kubectl get all -n weather-system
-kubectl describe deployment weathernews-api -n weather-system
-
 🤖 Inštrukcie pre AI (Execution Order)
 Pri generovaní kódu postupuj iteratívne v tomto poradí:
 1. Vytvor Solution, štruktúru projektov a základný README.md.
